@@ -10,15 +10,10 @@ from sound import play_effect
 class Game(Scene):
 	def setup(self):
 		self.root_layer = Layer(self.bounds)
-		front_images = [
-			'emj:Angry', 'emj:Astonished',
-			'emj:Smiling_6', 'emj:Cold_Sweat_2',
-			'emj:Confounded', 'emj:Smirking',
-			'emj:Crying_2', 'emj:Disappointed',
-			'emj:Dizzy', 'emj:Fear_2',
-			'emj:Flushed', 'emj:Tears_Of_Joy'] * 2
+		front_images = ('Angry Astonished Smiling_6 Cold_Sweat_2 Confounded Smirking'
+						' Crying_2 Disappointed Dizzy Fear_2 Flushed Tears_Of_Joy')
+		self.front_images = ['emj:' + image for image in front_images.split() * 2]
 		self.imp_image = 'emj:Imp'
-		self.front_images = [image for image in front_images]
 		self.front_images.append(self.imp_image)
 		self.deal()
 	
@@ -37,17 +32,17 @@ class Game(Scene):
 		offset = Point(
 			(self.size.w - gameboard_width) / 2,
 			(self.size.h - gameboard_width) / 2)
-		for i in xrange(len(self.front_images)):
+		for i, front_image in enumerate(self.front_images):
 			x, y = i%5, i/5
 			card = Layer(Rect(
 				offset.x + x * (card_size + 10),
 				offset.y + y * (card_size + 10),
 				card_size, card_size))
-			card.background = Color(0.95, 0.95, 0.95)
-			card.stroke = Color(1, 1, 1)
+			card.background = Color(0.95, 0.95, 0.95, 1)
+			card.stroke = Color(1, 1, 1, 1)
 			card.stroke_weight = 5.0
 			card.back_image = 'card:BackBlue3'
-			card.front_image = self.front_images[i]
+			card.front_image = front_image
 			card.image = card.back_image
 			self.add_layer(card)
 			self.cards.append(card)
@@ -84,25 +79,25 @@ class Game(Scene):
 				card.animate('scale_x', 1.0, 0.15)
 			card.animate('scale_x', 0.0, 0.15, completion=partial(conceal, card))
 			card.animate('scale_y', 0.9, 0.15, autoreverse=True)
-			card.animate('background', Color(0.8, 0.8, 0.8), duration=0.1)
+			card.animate('background', Color(0.8, 0.8, 0.8, 1), duration=0.1)
 		self.selected = []
 
 	def check_selection(self):
 		self.touch_disabled = False
 		if len(self.selected) == 1 and self.selected[0].front_image == self.imp_image:
 			play_effect('game:Bleep', volume=0.1)
-			self.selected[0].animate('background', Color(0.5, 0.5, 1.0), duration=0.05)
+			self.selected[0].animate('background', Color(0.5, 0.5, 1.0, 1), duration=0.05)
 		if len(self.selected) == 2 and self.selected[1].front_image == self.imp_image:
 			play_effect('game:Bleep', volume=0.1)
 			for c in self.selected:
-				c.background = Color(0.5, 0.5, 1.0)
+				c.background = Color(0.5, 0.5, 1.0, 1)
 		elif len(self.selected) == 2:
 			card_img1 = self.selected[0].front_image
 			card_img2 = self.selected[1].front_image
 			if card_img1 == card_img2:
 				play_effect('arcade:Coin_3', volume=0.4)
 				for c in self.selected:
-					c.animate('background', Color(0.5, 1.0, 0.5))
+					c.animate('background', Color(0.5, 1.0, 0.5, 1))
 					self.cards.remove(c)
 					self.selected = []
 					if len(self.cards) == 1:
@@ -110,7 +105,7 @@ class Game(Scene):
 			elif card_img1 != card_img2:
 				play_effect('game:Error', volume=0.4)
 				for c in self.selected:
-					c.animate('background', Color(1.0, 0.5, 0.5), duration=0.05)
+					c.animate('background', Color(1.0, 0.5, 0.5, 1), duration=0.05)
 
 	def new_game(self):
 		play_effect('arcade:Coin_2', volume=0.7)
